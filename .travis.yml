@@ -23,43 +23,12 @@ cache:
     - vendor
 
 stages:
-  - dep-cache
   - test
-  - name: build
-    if: (type != pull_request AND branch = master AND tag IS blank) OR tag IS present
-  - name: release-dev
-    if: type != pull_request AND branch = master AND tag IS blank
-  - name: release
-    if: tag IS present
 
 jobs:
   include:
-    # Dependencies cache stage
-    - stage: dep-cache
-      name: "Vendor update"
-      script:
-        - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-        - dep ensure
-
     # Test stage
     - stage: test
-      script: bin/test
-      name: "Unit tests"
-
-    - script: bin/builder_run bin/check_golint
-      name: "golint check"
-
-    - script: bin/builder_run bin/check_goimports
-      name: "goimports check"
-
-    - script: bin/check_license
-      name: "license check"
-
-    - script: bin/check_govet
-      name: "govet check"
-
-    # Build artifacts
-    - stage: build
       script:
       - go get github.com/go-swagger/go-swagger
       - bin/swagger generate spec --base-path=./cmd/mysterium_node/ -o ./tequilapi_spec.json --scan-models
